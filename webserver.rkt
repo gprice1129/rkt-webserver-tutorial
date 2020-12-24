@@ -20,6 +20,14 @@
     `(li ,a-fragment))
 
 
+;;; comments
+(define (can-parse-comment? bindings)
+    (exists-binding? 'comment bindings))
+
+(define (parse-comment bindings)
+    (extract-binding/single 'comment bindings))
+
+
 ;;; posts
 (struct post (title body comments) #:mutable)
 
@@ -54,8 +62,24 @@
           '()))
 
 (define (render-post-detail-page a-post request)
-    ; TODO
-    '())
+    (define p-title (post-title a-post))
+    (define (response-generator embed/url)
+        (response/xexpr
+            `(html
+                (head (title ,p-title))
+                (body
+                    (h2 ,p-title))
+                    (p ,(post-body a-post))
+                    ,(render-as-itemized-list (post-comments a-post))
+                    (form ((action ,(embed/url insert-comment-handler)))
+                        (input ((name "comment")))))))
+    (define (insert-comment-handler request)
+        (define bindings (request-bindings request))
+        (when (can-parse-comment? bindings)
+            (post-append-comment! a-post (parse-comment bindings)))
+        (render-post-detail-page a-post request))
+
+    (send/suspend/dispatch response-generator))
 
 ;;; blog
 (struct blog (posts) #:mutable)
@@ -76,8 +100,9 @@
                         (input ((type "submit"))))))))
 
     (define (insert-post-handler request)
-        (when (can-parse-post? (request-bindings request))
-              (blog-insert-post! BLOG (parse-post (request-bindings request))))
+        (define bindings (request-bindings request))
+        (when (can-parse-post? bindings)
+              (blog-insert-post! BLOG (parse-post bindings)))
         (render-blog-page request))
 
     (send/suspend/dispatch response-generator))
