@@ -4,6 +4,14 @@
 (define (start request)
     (render-blog-page request))
 
+;;; setup static files directory
+(static-files-path "htdocs")
+
+(define stylesheet
+    '(link ((rel "stylesheet")
+            (href "/webserver.css")
+            (type "text/css"))))
+
 
 ;;; xexpr helpers
 
@@ -30,7 +38,8 @@
 (define (render-confirm-add-comment-page a-comment a-post request)
     (define (response-generator embed/url)
         (response/xexpr
-            `(html (head (title "Add a Comment"))
+            `(html
+                (head (title "Add a Comment"))
                 (body
                     (h1 "Add a Comment")
                     "The comment: " (div (p ,a-comment))
@@ -119,8 +128,11 @@
     (define (response-generator embed/url)
         (response/xexpr
             `(html
-                (head (title "Guthrie's Blog"))
-                (body (h1 "Guthrie's Blog")
+                (head 
+                    (title "Guthrie's Blog")
+                    ,stylesheet)
+                (body 
+                    (h1 "Guthrie's Blog")
                     ,(render-posts embed/url)
                     (form ((action ,(embed/url insert-post-handler)))
                         (input ((name "title")))
