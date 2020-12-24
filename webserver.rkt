@@ -27,6 +27,28 @@
 (define (parse-comment bindings)
     (extract-binding/single 'comment bindings))
 
+(define (render-confirm-add-comment-page a-comment a-post request)
+    (define (response-generator embed/url)
+        (response/xexpr
+            `(html (head (title "Add a Comment"))
+                (body
+                    (h1 "Add a Comment")
+                    "The comment: " (div (p ,a-comment))
+                    "will be added to "
+                    (div ,(post-title a-post))
+                    
+                    (p (a ((href ,(embed/url yes-handler)))
+                        "Yes, add the comment."))
+                    (p (a ((href ,(embed/url cancel-handler)))
+                        "No, I changed my mind!"))))))
+
+    (define (yes-handler request)
+        (post-append-comment! a-post a-comment)
+        (render-post-detail-page a-post request))
+
+    (define (cancel-handler request)
+        (render-post-detail-page a-post request))
+    (send/suspend/dispatch response-generator))
 
 ;;; posts
 (struct post (title body comments) #:mutable)
@@ -70,15 +92,21 @@
                 (body
                     (h2 ,p-title))
                     (p ,(post-body a-post))
+                    (a ((href ,(embed/url back-handler))) "Back to Blog")
                     ,(render-as-itemized-list (post-comments a-post))
                     (form ((action ,(embed/url insert-comment-handler)))
-                        (input ((name "comment")))))))
+                        (input ((name "comment")))
+                        (input ((type "submit")))))))
+
     (define (insert-comment-handler request)
         (define bindings (request-bindings request))
-        (when (can-parse-comment? bindings)
-            (post-append-comment! a-post (parse-comment bindings)))
-        (render-post-detail-page a-post request))
+        (if (can-parse-comment? bindings)
+            (render-confirm-add-comment-page
+                (parse-comment bindings) a-post request)
+            (render-post-detail-page a-post request)))
 
+    (define (back-handler request)
+        (render-blog-page request))
     (send/suspend/dispatch response-generator))
 
 ;;; blog
