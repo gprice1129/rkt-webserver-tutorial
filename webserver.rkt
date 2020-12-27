@@ -73,9 +73,10 @@
     `(div ((class "post"))
         (h2 (a ((href ,(embed/url view-post-handler))) ,(post-title a-post)))
         (p ,(post-body a-post))
-        (p ,(string-append 
-            "Comments: "
-            (number->string (length (post-comments a-post)))))))
+        (p ((class "comments"))
+            ,(string-append 
+                "Comments: "
+                (number->string (length (post-comments a-post)))))))
 
 (define (render-posts embed/url)
     (define (render-helper a-post)

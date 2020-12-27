@@ -1,8 +1,27 @@
 body {
     margin-left: 10%;
     margin-right: 10%;
+    background-color: black;
 }
 
-p { font-family: sans-serif }
-h1 { color: green }
-h2 { font-size: small }
+p,h1,h2 {
+    color: white;
+    font-family: 'Indie Flower'
+}
+
+a {
+    color: darkred;
+    size: 10px;
+    font-family: 'Indie Flower';
+    font-size: 20px;
+}
+
+a:hover {
+    color: crimson;
+    font-family: 'Indie Flower';
+    font-size: 24px;
+}
+
+.comments {
+    font-size: small
+}
